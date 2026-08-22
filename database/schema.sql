@@ -31,6 +31,7 @@ CREATE TABLE IF NOT EXISTS employees (
     phone VARCHAR(30) NULL,
     department VARCHAR(100) NOT NULL,
     designation VARCHAR(100) NOT NULL,
+    salary DECIMAL(12,2) NOT NULL DEFAULT 0.00,
     joining_date DATE NOT NULL,
     profile_photo VARCHAR(255) NULL,
     status ENUM('active', 'inactive', 'on_leave') NOT NULL DEFAULT 'active',
@@ -138,12 +139,12 @@ INSERT INTO leave_types (id, name, code, max_days, description, is_active) VALUE
 ON DUPLICATE KEY UPDATE name=VALUES(name);
 
 -- Insert Demo Employees
-INSERT INTO employees (employee_id, full_name, email, phone, department, designation, joining_date, profile_photo, status) VALUES
-('ADM001', 'System Administrator', 'admin@example.com', '+1-555-0100', 'Administration', 'IT Director', '2022-01-10', '', 'active'),
-('HR001', 'Sarah Jenkins', 'hr@example.com', '+1-555-0101', 'Human Resources', 'HR Manager', '2022-03-15', '', 'active'),
-('EMP001', 'John Doe', 'john.doe@example.com', '+1-555-0102', 'Engineering', 'Senior Full Stack Developer', '2023-01-05', '', 'active'),
-('EMP002', 'Jane Smith', 'jane.smith@example.com', '+1-555-0103', 'Marketing', 'Lead Marketing Strategist', '2023-04-12', '', 'active'),
-('EMP003', 'Alex Jones', 'alex.jones@example.com', '+1-555-0104', 'Product Design', 'UI/UX Designer', '2023-06-20', '', 'active')
+INSERT INTO employees (employee_id, full_name, email, phone, department, designation, salary, joining_date, profile_photo, status) VALUES
+('ADM001', 'System Administrator', 'admin@example.com', '+1-555-0100', 'Administration', 'IT Director', 2400000.00, '2022-01-10', '', 'active'),
+('HR001', 'Sarah Jenkins', 'hr@example.com', '+1-555-0101', 'Human Resources', 'HR Manager', 1800000.00, '2022-03-15', '', 'active'),
+('EMP001', 'John Doe', 'john.doe@example.com', '+1-555-0102', 'Engineering', 'Senior Full Stack Developer', 1500000.00, '2023-01-05', '', 'active'),
+('EMP002', 'Jane Smith', 'jane.smith@example.com', '+1-555-0103', 'Marketing', 'Lead Marketing Strategist', 1400000.00, '2023-04-12', '', 'active'),
+('EMP003', 'Alex Jones', 'alex.jones@example.com', '+1-555-0104', 'Product Design', 'UI/UX Designer', 1300000.00, '2023-06-20', '', 'active')
 ON DUPLICATE KEY UPDATE full_name=VALUES(full_name);
 
 -- Insert Users with bcrypt hashed passwords

@@ -29,9 +29,9 @@ async function register(req, res) {
 
         // Insert into employees table
         await db.query(
-            `INSERT INTO employees (employee_id, full_name, email, phone, department, designation, joining_date, status)
-             VALUES (?, ?, ?, ?, ?, ?, ?, 'active')`,
-            [employeeId, fullName, email, phone || '', department || 'General', designation || 'Staff', joiningDate]
+            `INSERT INTO employees (employee_id, full_name, email, phone, department, designation, salary, joining_date, status)
+             VALUES (?, ?, ?, ?, ?, ?, ?, ?, 'active')`,
+            [employeeId, fullName, email, phone || '', department || 'General', designation || 'Staff', 0, joiningDate]
         );
 
         // Insert into users table
@@ -95,7 +95,7 @@ async function login(req, res) {
 
         // Query user by email OR employee_id
         const users = await db.query(
-            `SELECT u.*, e.full_name, e.department, e.designation, e.profile_photo, e.phone
+            `SELECT u.*, e.full_name, e.department, e.designation, e.salary, e.profile_photo, e.phone
              FROM users u
              LEFT JOIN employees e ON u.employee_id = e.employee_id
              WHERE (u.email = ? OR u.employee_id = ?)`,
@@ -152,6 +152,7 @@ async function login(req, res) {
                 fullName: user.full_name || 'User',
                 department: user.department || '',
                 designation: user.designation || '',
+                salary: Number(user.salary) || 0,
                 profilePhoto: user.profile_photo || ''
             }
         });
@@ -168,7 +169,7 @@ async function getMe(req, res) {
     try {
         const users = await db.query(
             `SELECT u.id, u.employee_id, u.email, u.role, u.is_active,
-                    e.full_name, e.department, e.designation, e.phone, e.joining_date, e.profile_photo, e.status
+                    e.full_name, e.department, e.designation, e.salary, e.phone, e.joining_date, e.profile_photo, e.status
              FROM users u
              LEFT JOIN employees e ON u.employee_id = e.employee_id
              WHERE u.id = ?`,
@@ -190,6 +191,7 @@ async function getMe(req, res) {
                 fullName: user.full_name || '',
                 department: user.department || '',
                 designation: user.designation || '',
+                salary: Number(user.salary) || 0,
                 phone: user.phone || '',
                 joiningDate: user.joining_date || '',
                 profilePhoto: user.profile_photo || '',

@@ -72,12 +72,13 @@
                                     <th>Employee Name</th>
                                     <th>Department</th>
                                     <th>Designation</th>
+                                    <th>Annual Salary</th>
                                     <th>Status</th>
                                     <th>Actions</th>
                                 </tr>
                             </thead>
                             <tbody id="employeesTableBody">
-                                <tr><td colspan="6" class="table-empty">Loading employees...</td></tr>
+                                <tr><td colspan="7" class="table-empty">Loading employees...</td></tr>
                             </tbody>
                         </table>
                     </div>
@@ -106,6 +107,11 @@
                             <label for="newFullName" class="label-required">Full Name</label>
                             <input type="text" id="newFullName" class="form-control" placeholder="e.g. Alice Green" required>
                         </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="newSalary" class="label-required">Annual Salary (₹)</label>
+                        <input type="number" id="newSalary" class="form-control" min="0" step="0.01" placeholder="e.g. 750000" required>
                     </div>
 
                     <div style="display:grid; grid-template-columns:1fr 1fr; gap:14px;">
@@ -173,6 +179,10 @@
                         <input type="tel" id="editPhone" class="form-control">
                     </div>
                 </div>
+                <div class="form-group">
+                    <label for="editSalary" class="label-required">Annual Salary (₹)</label>
+                    <input type="number" id="editSalary" class="form-control" min="0" step="0.01" required>
+                </div>
                 <div style="display:grid; grid-template-columns:1fr 1fr; gap:14px;">
                     <div class="form-group">
                         <label for="editDepartment" class="label-required">Department</label>
@@ -219,11 +229,12 @@
             const phone = document.getElementById('newPhone').value.trim();
             const department = document.getElementById('newDepartment').value;
             const designation = document.getElementById('newDesignation').value.trim();
+            const salary = document.getElementById('newSalary').value;
             const password = document.getElementById('newPassword').value;
 
             try {
-                const res = await API.post('/auth/register', {
-                    employeeId, fullName, email, phone, department, designation, password
+                const res = await API.post('/employees', {
+                    employeeId, fullName, email, phone, department, designation, salary, password
                 });
                 showToast(res.message || 'Employee created successfully!', 'success');
                 closeModal('addEmployeeModal');

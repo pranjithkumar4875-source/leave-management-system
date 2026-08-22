@@ -5,6 +5,14 @@
 let currentEmployeesPage = 1;
 let totalEmployeesCount = 0;
 
+function formatSalary(salary) {
+    return new Intl.NumberFormat('en-IN', {
+        style: 'currency',
+        currency: 'INR',
+        maximumFractionDigits: 0
+    }).format(Number(salary) || 0);
+}
+
 // 1. Load Employees Table
 async function loadEmployeesTable(page = 1) {
     currentEmployeesPage = page;
@@ -50,6 +58,7 @@ async function loadEmployeesTable(page = 1) {
                 </td>
                 <td>${emp.department}</td>
                 <td>${emp.designation}</td>
+                <td>${formatSalary(emp.salary)}</td>
                 <td>
                     <span class="badge badge-${emp.status === 'active' ? 'approved' : 'rejected'}">
                         ${emp.status}
@@ -135,6 +144,7 @@ async function openEditEmployeeModal(empId) {
         document.getElementById('editPhone').value = emp.phone || '';
         document.getElementById('editDepartment').value = emp.department;
         document.getElementById('editDesignation').value = emp.designation;
+        document.getElementById('editSalary').value = Number(emp.salary) || 0;
         document.getElementById('editStatus').value = emp.status;
 
         openModal('editEmployeeModal');
@@ -149,6 +159,7 @@ async function submitEditEmployee() {
     const phone = document.getElementById('editPhone').value;
     const department = document.getElementById('editDepartment').value;
     const designation = document.getElementById('editDesignation').value;
+    const salary = document.getElementById('editSalary').value;
     const status = document.getElementById('editStatus').value;
 
     try {
@@ -157,6 +168,7 @@ async function submitEditEmployee() {
             phone,
             department,
             designation,
+            salary,
             status
         });
         showToast(res.message, 'success');

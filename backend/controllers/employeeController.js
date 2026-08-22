@@ -3,6 +3,68 @@ const bcrypt = require('bcryptjs');
 const { logAudit } = require('../utils/auditLogger');
 
 /**
+ * Create an employee record. Salary is intentionally accepted only here,
+ * behind the admin-only route.
+ */
+async function createEmployee(req, res) {
+    try {
+        const { employeeId, fullName, email, phone, department, designation, salary, password } = req.body;
+        const annualSalary = Number(salary);
+
+        if (!employeeId || !fullName || !email || !designation || !password) {
+            return res.status(400).json({ success: false, message: 'Employee ID, name, email, designation, and password are required.' });
+        }
+        if (!Number.isFinite(annualSalary) || annualSalary < 0) {
+            return res.status(400).json({ success: false, message: 'Salary must be a valid non-negative amount.' });
+        }
+
+        const existing = await db.query('SELECT * FROM users WHERE email = ? OR employee_id = ?', [email.trim(), employeeId.trim()]);
+        if (existing.length > 0) {
+            return res.status(400).json({ success: false, message: 'An employee with this email or Employee ID already exists.' });
+        }
+
+        const joinedOn = new Date().toISOString().substring(0, 10);
+        await db.query(
+            `INSERT INTO employees (employee_id, full_name, email, phone, department, designation, salary, joining_date, status)
+             VALUES (?, ?, ?, ?, ?, ?, ?, ?, 'active')`,
+            [employeeId.trim(), fullName.trim(), email.trim().toLowerCase(), phone || '', department || 'General', designation.trim(), annualSalary, joinedOn]
+        );
+
+        const passwordHash = await bcrypt.hash(password, 10);
+        await db.query(
+            `INSERT INTO users (employee_id, email, password, role, is_active)
+             VALUES (?, ?, ?, 'employee', 1)`,
+            [employeeId.trim(), email.trim().toLowerCase(), passwordHash]
+        );
+
+        const leaveTypes = await db.query('SELECT * FROM leave_types WHERE is_active = 1');
+        const year = new Date().getFullYear();
+        for (const leaveType of leaveTypes) {
+            await db.query(
+                `INSERT INTO leave_balances (employee_id, leave_type_id, total_days, used_days, available_days, year)
+                 VALUES (?, ?, ?, 0, ?, ?)`,
+                [employeeId.trim(), leaveType.id, leaveType.max_days, leaveType.max_days, year]
+            );
+        }
+
+        await logAudit({
+            userId: req.user.userId,
+            employeeId: employeeId.trim(),
+            userName: req.user.fullName,
+            role: req.user.role,
+            action: 'Employee created',
+            details: `Created employee ${employeeId.trim()} with salary details.`,
+            req
+        });
+
+        return res.status(201).json({ success: true, message: 'Employee created successfully.' });
+    } catch (err) {
+        console.error('createEmployee error:', err);
+        return res.status(500).json({ success: false, message: 'Failed to create employee.' });
+    }
+}
+
+/**
  * Get all employees with search, filtering, sorting, pagination
  */
 async function getAllEmployees(req, res) {
@@ -147,7 +209,7 @@ async function getEmployeeById(req, res) {
 async function updateEmployee(req, res) {
     try {
         const idOrCode = req.params.id;
-        const { fullName, phone, department, designation, status, profilePhoto } = req.body;
+        const { fullName, phone, department, designation, salary, status, profilePhoto } = req.body;
 
         // Verify permission: Employee can only update own phone/photo/profile, Admin/HR can update all
         if (req.user.role === 'employee' && req.user.employeeId !== idOrCode && req.user.userId != idOrCode) {
@@ -164,14 +226,19 @@ async function updateEmployee(req, res) {
         const updatedPhone = phone !== undefined ? phone : emp.phone;
         const updatedDept = (req.user.role === 'admin' || req.user.role === 'hr') && department !== undefined ? department : emp.department;
         const updatedDesig = (req.user.role === 'admin' || req.user.role === 'hr') && designation !== undefined ? designation : emp.designation;
+        const updatedSalary = req.user.role === 'admin' && salary !== undefined ? Number(salary) : Number(emp.salary || 0);
         const updatedStatus = (req.user.role === 'admin' || req.user.role === 'hr') && status !== undefined ? status : emp.status;
         const updatedPhoto = profilePhoto !== undefined ? profilePhoto : emp.profile_photo;
 
+        if (!Number.isFinite(updatedSalary) || updatedSalary < 0) {
+            return res.status(400).json({ success: false, message: 'Salary must be a valid non-negative amount.' });
+        }
+
         await db.query(
             `UPDATE employees
-             SET full_name = ?, phone = ?, department = ?, designation = ?, status = ?, profile_photo = ?
+             SET full_name = ?, phone = ?, department = ?, designation = ?, salary = ?, status = ?, profile_photo = ?
              WHERE employee_id = ?`,
-            [updatedName, updatedPhone, updatedDept, updatedDesig, updatedStatus, updatedPhoto, emp.employee_id]
+            [updatedName, updatedPhone, updatedDept, updatedDesig, updatedSalary, updatedStatus, updatedPhoto, emp.employee_id]
         );
 
         if (status && (req.user.role === 'admin' || req.user.role === 'hr')) {
@@ -387,6 +454,7 @@ async function importEmployees(req, res) {
 }
 
 module.exports = {
+    createEmployee,
     getAllEmployees,
     getEmployeeById,
     updateEmployee,

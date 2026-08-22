@@ -22,6 +22,16 @@ async function loadDashboardData() {
             if (elUsed) elUsed.textContent = stats.usedLeave || 0;
             if (elPending) elPending.textContent = stats.pendingRequests || 0;
 
+            const salaryElement = document.getElementById('statSalary');
+            if (salaryElement) {
+                const profile = await API.get('/auth/me');
+                salaryElement.textContent = new Intl.NumberFormat('en-IN', {
+                    style: 'currency',
+                    currency: 'INR',
+                    maximumFractionDigits: 0
+                }).format(Number(profile.user.salary) || 0);
+            }
+
             // Render category cards (Casual, Sick, Earned, Other)
             const balanceCardsContainer = document.getElementById('leaveBalanceCards');
             if (balanceCardsContainer && leaveBalances) {

@@ -26,11 +26,11 @@ async function getSeedData() {
             { id: 5, employee_id: 'EMP003', email: 'alex.jones@example.com', password: empPasswordHash, role: 'employee', is_active: 1, reset_token: null, reset_token_expiry: null, created_at: '2026-01-01 09:00:00', updated_at: '2026-01-01 09:00:00' }
         ],
         employees: [
-            { id: 1, employee_id: 'ADM001', full_name: 'System Administrator', email: 'admin@example.com', phone: '+1-555-0100', department: 'Administration', designation: 'IT Director', joining_date: '2022-01-10', profile_photo: '', status: 'active', created_at: '2022-01-10 09:00:00', updated_at: '2026-01-01 09:00:00' },
-            { id: 2, employee_id: 'HR001', full_name: 'Sarah Jenkins', email: 'hr@example.com', phone: '+1-555-0101', department: 'Human Resources', designation: 'HR Manager', joining_date: '2022-03-15', profile_photo: '', status: 'active', created_at: '2022-03-15 09:00:00', updated_at: '2026-01-01 09:00:00' },
-            { id: 3, employee_id: 'EMP001', full_name: 'John Doe', email: 'john.doe@example.com', phone: '+1-555-0102', department: 'Engineering', designation: 'Senior Full Stack Developer', joining_date: '2023-01-05', profile_photo: '', status: 'active', created_at: '2023-01-05 09:00:00', updated_at: '2026-01-01 09:00:00' },
-            { id: 4, employee_id: 'EMP002', full_name: 'Jane Smith', email: 'jane.smith@example.com', phone: '+1-555-0103', department: 'Marketing', designation: 'Lead Marketing Strategist', joining_date: '2023-04-12', profile_photo: '', status: 'active', created_at: '2023-04-12 09:00:00', updated_at: '2026-01-01 09:00:00' },
-            { id: 5, employee_id: 'EMP003', full_name: 'Alex Jones', email: 'alex.jones@example.com', phone: '+1-555-0104', department: 'Product Design', designation: 'UI/UX Designer', joining_date: '2023-06-20', profile_photo: '', status: 'active', created_at: '2023-06-20 09:00:00', updated_at: '2026-01-01 09:00:00' }
+            { id: 1, employee_id: 'ADM001', full_name: 'System Administrator', email: 'admin@example.com', phone: '+1-555-0100', department: 'Administration', designation: 'IT Director', salary: 2400000, joining_date: '2022-01-10', profile_photo: '', status: 'active', created_at: '2022-01-10 09:00:00', updated_at: '2026-01-01 09:00:00' },
+            { id: 2, employee_id: 'HR001', full_name: 'Sarah Jenkins', email: 'hr@example.com', phone: '+1-555-0101', department: 'Human Resources', designation: 'HR Manager', salary: 1800000, joining_date: '2022-03-15', profile_photo: '', status: 'active', created_at: '2022-03-15 09:00:00', updated_at: '2026-01-01 09:00:00' },
+            { id: 3, employee_id: 'EMP001', full_name: 'John Doe', email: 'john.doe@example.com', phone: '+1-555-0102', department: 'Engineering', designation: 'Senior Full Stack Developer', salary: 1500000, joining_date: '2023-01-05', profile_photo: '', status: 'active', created_at: '2023-01-05 09:00:00', updated_at: '2026-01-01 09:00:00' },
+            { id: 4, employee_id: 'EMP002', full_name: 'Jane Smith', email: 'jane.smith@example.com', phone: '+1-555-0103', department: 'Marketing', designation: 'Lead Marketing Strategist', salary: 1400000, joining_date: '2023-04-12', profile_photo: '', status: 'active', created_at: '2026-01-01 09:00:00', updated_at: '2026-01-01 09:00:00' },
+            { id: 5, employee_id: 'EMP003', full_name: 'Alex Jones', email: 'alex.jones@example.com', phone: '+1-555-0104', department: 'Product Design', designation: 'UI/UX Designer', salary: 1300000, joining_date: '2023-06-20', profile_photo: '', status: 'active', created_at: '2023-06-20 09:00:00', updated_at: '2026-01-01 09:00:00' }
         ],
         leave_types: [
             { id: 1, name: 'Casual Leave', code: 'CL', max_days: 12, description: 'Annual casual leave allowance for personal matters', is_active: 1, created_at: '2026-01-01 00:00:00', updated_at: '2026-01-01 00:00:00' },
@@ -146,6 +146,13 @@ async function initDatabase() {
             }
         }
 
+        // Backward-compatible migration for databases created before salary support.
+        try {
+            await pool.query('ALTER TABLE employees ADD COLUMN salary DECIMAL(12,2) NOT NULL DEFAULT 0.00 AFTER designation');
+        } catch (migrationErr) {
+            if (migrationErr.code !== 'ER_DUP_FIELDNAME') throw migrationErr;
+        }
+
         console.log('✓ Successfully connected to MySQL database: ' + database);
         useFallbackDb = false;
     } catch (err) {
@@ -163,6 +170,15 @@ async function initDatabase() {
             fallbackData = await getSeedData();
             saveFallbackData();
         }
+        let fallbackUpdated = false;
+        const demoSalaries = { ADM001: 2400000, HR001: 1800000, EMP001: 1500000, EMP002: 1400000, EMP003: 1300000 };
+        (fallbackData.employees || []).forEach((employee) => {
+            if (employee.salary === undefined) {
+                employee.salary = demoSalaries[employee.employee_id] || 0;
+                fallbackUpdated = true;
+            }
+        });
+        if (fallbackUpdated) saveFallbackData();
         console.log('✓ Local database store initialized with full demo dataset.');
     }
 }
@@ -238,6 +254,7 @@ function handleFallbackSelect(sql, params) {
                 full_name: emp.full_name,
                 department: emp.department,
                 designation: emp.designation,
+                salary: emp.salary || 0,
                 email: emp.email
             };
         });
@@ -364,7 +381,8 @@ function handleFallbackUpdate(sql, params) {
             if (/phone\s*=\s*\?/i.test(sql)) record.phone = params[1];
             if (/department\s*=\s*\?/i.test(sql)) record.department = params[2];
             if (/designation\s*=\s*\?/i.test(sql)) record.designation = params[3];
-            if (/status\s*=\s*\?/i.test(sql)) record.status = params[params.length - 2] || params[0];
+            if (/salary\s*=\s*\?/i.test(sql)) record.salary = params[4];
+            if (/status\s*=\s*\?/i.test(sql)) record.status = params[5] || params[0];
             saveFallbackData();
             return { affectedRows: 1 };
         }

@@ -13,6 +13,7 @@ const upload = multer({
 
 // Protected: All employees can fetch profile, HR/Admin can view all
 router.get('/', authMiddleware, roleMiddleware(['admin', 'hr']), employeeController.getAllEmployees);
+router.post('/', authMiddleware, roleMiddleware(['admin']), employeeController.createEmployee);
 router.get('/:id', authMiddleware, employeeController.getEmployeeById);
 router.put('/:id', authMiddleware, employeeController.updateEmployee);
 

@@ -66,6 +66,10 @@
                                 <strong id="profileJoining">--</strong>
                             </div>
                             <div>
+                                <span class="text-muted" style="font-size:12px; display:block; margin-bottom:2px;">Annual Salary</span>
+                                <strong id="profileSalary">--</strong>
+                            </div>
+                            <div>
                                 <span class="text-muted" style="font-size:12px; display:block; margin-bottom:2px;">Account Status</span>
                                 <span class="badge badge-approved" id="profileStatus">Active</span>
                             </div>
@@ -166,6 +170,7 @@
                 document.getElementById('profilePhone').textContent = user.phone || 'Not provided';
                 document.getElementById('profileDept').textContent = user.department || 'General';
                 document.getElementById('profileJoining').textContent = formatDate(user.joiningDate);
+                document.getElementById('profileSalary').textContent = new Intl.NumberFormat('en-IN', { style: 'currency', currency: 'INR', maximumFractionDigits: 0 }).format(Number(user.salary) || 0);
                 document.getElementById('profileRoleBadge').textContent = user.role.toUpperCase();
 
                 // Prefill edit form
