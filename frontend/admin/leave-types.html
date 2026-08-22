@@ -1,0 +1,247 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Leave Types - LeavePortal</title>
+    <link rel="stylesheet" href="/css/style.css">
+    <link rel="stylesheet" href="/css/dashboard.css">
+    <link rel="stylesheet" href="/css/tables.css">
+    <link rel="stylesheet" href="/css/responsive.css">
+    <script src="/js/api.js"></script>
+    <script src="/js/auth.js"></script>
+    <script src="/js/common.js"></script>
+</head>
+<body>
+    <div class="app-layout">
+        <div id="sidebar-container"></div>
+
+        <div class="app-main">
+            <div id="navbar-container"></div>
+
+            <main class="app-content">
+                <div class="page-header">
+                    <div class="page-title">
+                        <h2>Leave Type Management</h2>
+                        <p>Configure company leave categories, maximum yearly allowances, and policies.</p>
+                    </div>
+                    <div>
+                        <button class="btn btn-primary" onclick="openModal('addLeaveTypeModal')">
+                            <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path></svg>
+                            Add Leave Category
+                        </button>
+                    </div>
+                </div>
+
+                <div class="table-wrapper">
+                    <div class="table-responsive">
+                        <table class="data-table">
+                            <thead>
+                                <tr>
+                                    <th>ID</th>
+                                    <th>Leave Category</th>
+                                    <th>Code</th>
+                                    <th>Annual Quota</th>
+                                    <th>Description</th>
+                                    <th>Status</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody id="leaveTypesTableBody">
+                                <tr><td colspan="7" class="table-empty">Loading leave categories...</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </main>
+        </div>
+    </div>
+
+    <!-- Add Leave Type Modal -->
+    <div class="modal" id="addLeaveTypeModal">
+        <div class="modal-dialog">
+            <div class="modal-header">
+                <h3>Add Leave Category</h3>
+                <button class="modal-close" onclick="closeModal('addLeaveTypeModal')">&times;</button>
+            </div>
+            <form id="addLeaveTypeForm">
+                <div class="modal-body">
+                    <div style="display:grid; grid-template-columns:2fr 1fr; gap:14px;">
+                        <div class="form-group">
+                            <label for="newTypeName" class="label-required">Category Name</label>
+                            <input type="text" id="newTypeName" class="form-control" placeholder="e.g. Parental Leave" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="newTypeCode" class="label-required">Code</label>
+                            <input type="text" id="newTypeCode" class="form-control" placeholder="e.g. PL" required>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="newMaxDays" class="label-required">Maximum Days / Year</label>
+                        <input type="number" id="newMaxDays" class="form-control" min="1" max="365" value="12" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="newDescription">Description & Policy Notes</label>
+                        <textarea id="newDescription" class="form-control" placeholder="Brief outline of who is eligible and documentation required..."></textarea>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" onclick="closeModal('addLeaveTypeModal')">Cancel</button>
+                    <button type="submit" class="btn btn-primary">Save Category</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Edit Leave Type Modal -->
+    <div class="modal" id="editLeaveTypeModal">
+        <div class="modal-dialog">
+            <div class="modal-header">
+                <h3>Edit Leave Category</h3>
+                <button class="modal-close" onclick="closeModal('editLeaveTypeModal')">&times;</button>
+            </div>
+            <form id="editLeaveTypeForm">
+                <input type="hidden" id="editTypeId">
+                <div class="modal-body">
+                    <div style="display:grid; grid-template-columns:2fr 1fr; gap:14px;">
+                        <div class="form-group">
+                            <label for="editTypeName" class="label-required">Category Name</label>
+                            <input type="text" id="editTypeName" class="form-control" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="editTypeCode" class="label-required">Code</label>
+                            <input type="text" id="editTypeCode" class="form-control" required>
+                        </div>
+                    </div>
+
+                    <div style="display:grid; grid-template-columns:1fr 1fr; gap:14px;">
+                        <div class="form-group">
+                            <label for="editMaxDays" class="label-required">Maximum Days / Year</label>
+                            <input type="number" id="editMaxDays" class="form-control" min="1" max="365" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="editIsActive">Status</label>
+                            <select id="editIsActive" class="form-control">
+                                <option value="1">Active / Enabled</option>
+                                <option value="0">Disabled</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="editDescription">Description</label>
+                        <textarea id="editDescription" class="form-control"></textarea>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" onclick="closeModal('editLeaveTypeModal')">Cancel</button>
+                    <button type="submit" class="btn btn-primary">Update Category</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        Auth.requireRole(['admin']);
+        initAppLayout('leave-types', 'Leave Type Management');
+
+        async function loadLeaveTypes() {
+            const tableBody = document.getElementById('leaveTypesTableBody');
+            if (!tableBody) return;
+
+            try {
+                const res = await API.get('/leave-types');
+                const types = res.leaveTypes || [];
+
+                if (types.length === 0) {
+                    tableBody.innerHTML = `<tr><td colspan="7" class="table-empty">No leave categories defined.</td></tr>`;
+                    return;
+                }
+
+                tableBody.innerHTML = types.map(t => `
+                    <tr>
+                        <td class="cell-primary">#${t.id}</td>
+                        <td><strong>${t.name}</strong></td>
+                        <td><span class="badge badge-role">${t.code}</span></td>
+                        <td><strong>${t.max_days}</strong> days</td>
+                        <td style="max-width:250px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">${t.description || 'N/A'}</td>
+                        <td><span class="badge badge-${t.is_active ? 'approved' : 'rejected'}">${t.is_active ? 'Active' : 'Disabled'}</span></td>
+                        <td>
+                            <div class="table-actions">
+                                <button class="btn btn-outline btn-sm" onclick="openEditTypeModal(${t.id}, '${t.name}', '${t.code}', ${t.max_days}, '${(t.description || '').replace(/'/g, "\\'")}', ${t.is_active})">Edit</button>
+                                <button class="btn btn-danger btn-sm" onclick="deleteType(${t.id})">Delete</button>
+                            </div>
+                        </td>
+                    </tr>
+                `).join('');
+            } catch (err) {
+                showToast('Failed to load leave types: ' + err.message, 'danger');
+            }
+        }
+
+        loadLeaveTypes();
+
+        // Add Type
+        document.getElementById('addLeaveTypeForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const name = document.getElementById('newTypeName').value.trim();
+            const code = document.getElementById('newTypeCode').value.trim();
+            const maxDays = document.getElementById('newMaxDays').value;
+            const description = document.getElementById('newDescription').value.trim();
+
+            try {
+                const res = await API.post('/leave-types', { name, code, maxDays, description });
+                showToast(res.message, 'success');
+                closeModal('addLeaveTypeModal');
+                document.getElementById('addLeaveTypeForm').reset();
+                loadLeaveTypes();
+            } catch (err) {
+                showToast(err.message, 'danger');
+            }
+        });
+
+        // Edit Type
+        function openEditTypeModal(id, name, code, maxDays, description, isActive) {
+            document.getElementById('editTypeId').value = id;
+            document.getElementById('editTypeName').value = name;
+            document.getElementById('editTypeCode').value = code;
+            document.getElementById('editMaxDays').value = maxDays;
+            document.getElementById('editDescription').value = description;
+            document.getElementById('editIsActive').value = isActive ? '1' : '0';
+            openModal('editLeaveTypeModal');
+        }
+
+        document.getElementById('editLeaveTypeForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const id = document.getElementById('editTypeId').value;
+            const name = document.getElementById('editTypeName').value.trim();
+            const code = document.getElementById('editTypeCode').value.trim();
+            const maxDays = document.getElementById('editMaxDays').value;
+            const description = document.getElementById('editDescription').value.trim();
+            const isActive = document.getElementById('editIsActive').value === '1';
+
+            try {
+                const res = await API.put(`/leave-types/${id}`, { name, code, maxDays, description, isActive });
+                showToast(res.message, 'success');
+                closeModal('editLeaveTypeModal');
+                loadLeaveTypes();
+            } catch (err) {
+                showToast(err.message, 'danger');
+            }
+        });
+
+        async function deleteType(id) {
+            if (!confirm(`Are you sure you want to delete or disable this leave category?`)) return;
+            try {
+                const res = await API.delete(`/leave-types/${id}`);
+                showToast(res.message, 'success');
+                loadLeaveTypes();
+            } catch (err) {
+                showToast(err.message, 'danger');
+            }
+        }
+    </script>
+</body>
+</html>

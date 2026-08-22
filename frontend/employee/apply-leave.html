@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Apply for Leave - LeavePortal</title>
+    <link rel="stylesheet" href="/css/style.css">
+    <link rel="stylesheet" href="/css/dashboard.css">
+    <link rel="stylesheet" href="/css/responsive.css">
+    <script src="/js/api.js"></script>
+    <script src="/js/auth.js"></script>
+    <script src="/js/common.js"></script>
+    <script src="/js/leaves.js"></script>
+</head>
+<body>
+    <div class="app-layout">
+        <div id="sidebar-container"></div>
+
+        <div class="app-main">
+            <div id="navbar-container"></div>
+
+            <main class="app-content">
+                <div class="page-header">
+                    <div class="page-title">
+                        <h2>Apply for Leave</h2>
+                        <p>Submit a time-off application for manager and HR review.</p>
+                    </div>
+                    <div>
+                        <a href="/employee/my-leaves.html" class="btn btn-outline">View Leave History</a>
+                    </div>
+                </div>
+
+                <div style="max-width: 680px; margin: 0 auto;">
+                    <div class="content-card">
+                        <form id="applyLeaveForm" enctype="multipart/form-data">
+                            <div class="form-group">
+                                <label for="leaveTypeId" class="label-required">Leave Category</label>
+                                <select id="leaveTypeId" name="leaveTypeId" class="form-control" required>
+                                    <option value="">Loading leave categories...</option>
+                                </select>
+                            </div>
+
+                            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px;">
+                                <div class="form-group">
+                                    <label for="startDate" class="label-required">Start Date</label>
+                                    <input type="date" id="startDate" name="startDate" class="form-control" required>
+                                </div>
+
+                                <div class="form-group">
+                                    <label for="endDate" class="label-required">End Date</label>
+                                    <input type="date" id="endDate" name="endDate" class="form-control" required>
+                                </div>
+                            </div>
+
+                            <!-- Real-time calculation feedback -->
+                            <div class="form-group">
+                                <label>Calculated Working Days</label>
+                                <input type="text" id="calculatedDays" class="form-control" readonly placeholder="Auto-calculated duration..." style="background:var(--bg-main); font-weight:700; color:var(--primary);">
+                                <div id="balanceNotice" style="margin-top:6px; font-size:12px;"></div>
+                            </div>
+
+                            <div class="form-group">
+                                <label for="reason" class="label-required">Reason for Time Off</label>
+                                <textarea id="reason" name="reason" class="form-control" placeholder="Provide details regarding your planned absence..." required></textarea>
+                            </div>
+
+                            <div class="form-group">
+                                <label for="document">Supporting Document (Optional)</label>
+                                <input type="file" id="document" name="document" class="form-control" accept=".pdf,.png,.jpg,.jpeg,.doc,.docx">
+                                <small class="text-muted" style="font-size:11px; margin-top:4px; display:block;">Medical certificates, travel itinerary, or event invitations (Max 10MB)</small>
+                            </div>
+
+                            <div style="display: flex; justify-content: flex-end; gap: 12px; margin-top: 24px; padding-top: 16px; border-top: 1px solid var(--surface-border);">
+                                <a href="/employee/employee-dashboard.html" class="btn btn-secondary">Cancel</a>
+                                <button type="submit" class="btn btn-primary">
+                                    Submit Application
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </main>
+        </div>
+    </div>
+
+    <script>
+        Auth.requireRole(['employee', 'hr', 'admin']);
+        initAppLayout('apply', 'Apply for Leave');
+        initApplyLeaveForm();
+    </script>
+</body>
+</html>

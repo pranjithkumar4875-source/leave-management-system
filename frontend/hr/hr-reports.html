@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>HR Leave Reports - LeavePortal</title>
+    <link rel="stylesheet" href="/css/style.css">
+    <link rel="stylesheet" href="/css/dashboard.css">
+    <link rel="stylesheet" href="/css/tables.css">
+    <link rel="stylesheet" href="/css/responsive.css">
+    <script src="/js/api.js"></script>
+    <script src="/js/auth.js"></script>
+    <script src="/js/common.js"></script>
+    <script src="/js/reports.js"></script>
+</head>
+<body>
+    <div class="app-layout">
+        <div id="sidebar-container"></div>
+
+        <div class="app-main">
+            <div id="navbar-container"></div>
+
+            <main class="app-content">
+                <div class="page-header">
+                    <div class="page-title">
+                        <h2>HR Leave Reports & Summaries</h2>
+                        <p>Generate, filter, print, and export CSV reports on staff time off.</p>
+                    </div>
+                    <div style="display:flex; gap:10px;">
+                        <button class="btn btn-outline" onclick="exportReportCsv()">
+                            <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path></svg>
+                            Export CSV
+                        </button>
+                        <button class="btn btn-primary" onclick="printReport()">
+                            <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z"></path></svg>
+                            Print Report
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Report Summary Stats -->
+                <div class="stat-grid">
+                    <div class="stat-card">
+                        <span class="stat-title">Total Requests</span>
+                        <div class="stat-value" id="repTotalLeaves">--</div>
+                    </div>
+                    <div class="stat-card">
+                        <span class="stat-title">Approved Days</span>
+                        <div class="stat-value text-success" id="repApprovedLeaves">--</div>
+                    </div>
+                    <div class="stat-card">
+                        <span class="stat-title">Pending</span>
+                        <div class="stat-value text-warning" id="repPendingLeaves">--</div>
+                    </div>
+                    <div class="stat-card">
+                        <span class="stat-title">Rejected</span>
+                        <div class="stat-value text-danger" id="repRejectedLeaves">--</div>
+                    </div>
+                </div>
+
+                <div class="table-wrapper">
+                    <!-- Filters Toolbar -->
+                    <div class="table-toolbar">
+                        <div class="filter-group" style="width:100%;">
+                            <div style="display:flex; flex-direction:column; gap:4px;">
+                                <label style="font-size:11px; color:var(--text-muted);">Report Type</label>
+                                <select id="reportTypeSelect" class="form-control" onchange="loadReports()" style="min-width:180px;">
+                                    <option value="monthly">Monthly Leave Report</option>
+                                    <option value="department">Department Leave Report</option>
+                                    <option value="leave_type">Leave Type Report</option>
+                                    <option value="employee">Employee Leave Report</option>
+                                    <option value="detailed">Detailed Requests List</option>
+                                </select>
+                            </div>
+
+                            <div style="display:flex; flex-direction:column; gap:4px;">
+                                <label style="font-size:11px; color:var(--text-muted);">Start Date</label>
+                                <input type="date" id="reportStartDate" class="form-control" onchange="loadReports()">
+                            </div>
+
+                            <div style="display:flex; flex-direction:column; gap:4px;">
+                                <label style="font-size:11px; color:var(--text-muted);">End Date</label>
+                                <input type="date" id="reportEndDate" class="form-control" onchange="loadReports()">
+                            </div>
+
+                            <div style="display:flex; flex-direction:column; gap:4px;">
+                                <label style="font-size:11px; color:var(--text-muted);">Department</label>
+                                <select id="reportDeptSelect" class="form-control" onchange="loadReports()" style="min-width:150px;">
+                                    <option value="">All Departments</option>
+                                    <option value="Engineering">Engineering</option>
+                                    <option value="Human Resources">Human Resources</option>
+                                    <option value="Marketing">Marketing</option>
+                                    <option value="Product Design">Product Design</option>
+                                    <option value="Administration">Administration</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="table-responsive">
+                        <table class="data-table">
+                            <thead>
+                                <tr id="reportTableHeader">
+                                    <th>Loading...</th>
+                                </tr>
+                            </thead>
+                            <tbody id="reportTableBody">
+                                <tr><td class="table-empty">Generating report...</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </main>
+        </div>
+    </div>
+
+    <script>
+        Auth.requireRole(['hr', 'admin']);
+        initAppLayout('reports', 'HR Reports');
+        loadReports();
+    </script>
+</body>
+</html>

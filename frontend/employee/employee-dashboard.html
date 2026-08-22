@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Employee Dashboard - LeavePortal</title>
+    <link rel="stylesheet" href="/css/style.css">
+    <link rel="stylesheet" href="/css/dashboard.css">
+    <link rel="stylesheet" href="/css/tables.css">
+    <link rel="stylesheet" href="/css/responsive.css">
+    <script src="/js/api.js"></script>
+    <script src="/js/auth.js"></script>
+    <script src="/js/common.js"></script>
+    <script src="/js/dashboard.js"></script>
+</head>
+<body>
+    <div class="app-layout">
+        <div id="sidebar-container"></div>
+
+        <div class="app-main">
+            <div id="navbar-container"></div>
+
+            <main class="app-content">
+                <div class="page-header">
+                    <div class="page-title">
+                        <h2>Welcome back, <span id="welcomeEmpName">Employee</span> 👋</h2>
+                        <p>Track your leave allowances, active applications, and upcoming time off.</p>
+                    </div>
+                    <div>
+                        <a href="/employee/apply-leave.html" class="btn btn-primary">
+                            <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
+                            </svg>
+                            Quick Apply Leave
+                        </a>
+                    </div>
+                </div>
+
+                <!-- High-level Stats Grid -->
+                <div class="stat-grid">
+                    <div class="stat-card">
+                        <div class="stat-top">
+                            <span class="stat-title">Total Allocated</span>
+                            <div class="stat-icon icon-purple">
+                                <svg width="20" height="20" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg>
+                            </div>
+                        </div>
+                        <div class="stat-value" id="statTotalLeave">--</div>
+                        <div class="stat-subtitle">Annual leave days</div>
+                    </div>
+
+                    <div class="stat-card">
+                        <div class="stat-top">
+                            <span class="stat-title">Available Balance</span>
+                            <div class="stat-icon icon-emerald">
+                                <svg width="20" height="20" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                            </div>
+                        </div>
+                        <div class="stat-value" id="statAvailLeave">--</div>
+                        <div class="stat-subtitle text-success">Ready to request</div>
+                    </div>
+
+                    <div class="stat-card">
+                        <div class="stat-top">
+                            <span class="stat-title">Used Leaves</span>
+                            <div class="stat-icon icon-amber">
+                                <svg width="20" height="20" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                            </div>
+                        </div>
+                        <div class="stat-value" id="statUsedLeave">--</div>
+                        <div class="stat-subtitle">Approved this year</div>
+                    </div>
+
+                    <div class="stat-card">
+                        <div class="stat-top">
+                            <span class="stat-title">Pending Requests</span>
+                            <div class="stat-icon icon-sky">
+                                <svg width="20" height="20" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                            </div>
+                        </div>
+                        <div class="stat-value" id="statPending">--</div>
+                        <div class="stat-subtitle">Awaiting review</div>
+                    </div>
+                </div>
+
+                <!-- Category Specific Balances (Casual, Sick, Earned, Maternity/Emergency) -->
+                <div style="margin-bottom: 24px;">
+                    <h3 style="font-size:16px; margin-bottom:14px; color:var(--text-secondary);">Leave Balances by Category</h3>
+                    <div class="stat-grid" id="leaveBalanceCards">
+                        <!-- Populated via dashboard.js -->
+                    </div>
+                </div>
+
+                <!-- Dashboard Content Layout -->
+                <div class="dashboard-grid">
+                    <!-- Recent Leave Requests Table -->
+                    <div class="content-card">
+                        <div class="card-header-flex">
+                            <h3>Recent Leave Requests</h3>
+                            <a href="/employee/my-leaves.html" class="btn btn-outline btn-sm">View All</a>
+                        </div>
+                        <div class="table-responsive">
+                            <table class="data-table" style="min-width: 500px;">
+                                <thead>
+                                    <tr>
+                                        <th>Request ID</th>
+                                        <th>Leave Type</th>
+                                        <th>Dates</th>
+                                        <th>Days</th>
+                                        <th>Status</th>
+                                        <th>Action</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="recentLeavesTable">
+                                    <tr><td colspan="6" class="table-empty">Loading records...</td></tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    <!-- Recent Notifications Widget -->
+                    <div class="content-card">
+                        <div class="card-header-flex">
+                            <h3>Recent Notifications</h3>
+                            <a href="/employee/notifications.html" class="btn btn-outline btn-sm">View All</a>
+                        </div>
+                        <div id="dashboardNotifWidget">
+                            <p class="text-muted">Loading notifications...</p>
+                        </div>
+                    </div>
+                </div>
+            </main>
+        </div>
+    </div>
+
+    <script>
+        Auth.requireRole(['employee', 'hr', 'admin']);
+        initAppLayout('dashboard', 'Employee Dashboard');
+
+        const currentUser = Auth.getCurrentUser();
+        if (currentUser) {
+            document.getElementById('welcomeEmpName').textContent = currentUser.fullName || currentUser.email;
+        }
+
+        loadDashboardData();
+    </script>
+</body>
+</html>

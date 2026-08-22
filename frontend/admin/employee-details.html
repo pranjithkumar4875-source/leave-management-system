@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Employee Profile Details - LeavePortal</title>
+    <link rel="stylesheet" href="/css/style.css">
+    <link rel="stylesheet" href="/css/dashboard.css">
+    <link rel="stylesheet" href="/css/tables.css">
+    <link rel="stylesheet" href="/css/responsive.css">
+    <script src="/js/api.js"></script>
+    <script src="/js/auth.js"></script>
+    <script src="/js/common.js"></script>
+    <script src="/js/employees.js"></script>
+</head>
+<body>
+    <div class="app-layout">
+        <div id="sidebar-container"></div>
+
+        <div class="app-main">
+            <div id="navbar-container"></div>
+
+            <main class="app-content">
+                <div class="page-header">
+                    <div class="page-title">
+                        <h2>Employee Profile Details</h2>
+                        <p>Comprehensive overview of staff info, leave balance quotas, and past absences.</p>
+                    </div>
+                    <div>
+                        <a href="/admin/manage-employees.html" class="btn btn-outline">&larr; Back to Directory</a>
+                    </div>
+                </div>
+
+                <!-- Personal and Job Information -->
+                <div class="dashboard-grid">
+                    <div class="content-card">
+                        <h3 style="font-size:16px; margin-bottom:16px; border-bottom:1px solid var(--surface-border); padding-bottom:10px;">
+                            Personal & Contact Information
+                        </h3>
+                        <div style="display:grid; grid-template-columns:1fr 1fr; gap:16px; font-size:13px;">
+                            <div>
+                                <span class="text-muted" style="display:block; font-size:11px;">Full Name</span>
+                                <strong id="empDetailName">--</strong>
+                            </div>
+                            <div>
+                                <span class="text-muted" style="display:block; font-size:11px;">Employee ID</span>
+                                <strong id="empDetailId">--</strong>
+                            </div>
+                            <div>
+                                <span class="text-muted" style="display:block; font-size:11px;">Email</span>
+                                <strong id="empDetailEmail">--</strong>
+                            </div>
+                            <div>
+                                <span class="text-muted" style="display:block; font-size:11px;">Phone</span>
+                                <strong id="empDetailPhone">--</strong>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="content-card">
+                        <h3 style="font-size:16px; margin-bottom:16px; border-bottom:1px solid var(--surface-border); padding-bottom:10px;">
+                            Job & Status Information
+                        </h3>
+                        <div style="display:grid; grid-template-columns:1fr 1fr; gap:16px; font-size:13px;">
+                            <div>
+                                <span class="text-muted" style="display:block; font-size:11px;">Department</span>
+                                <strong id="empDetailDept">--</strong>
+                            </div>
+                            <div>
+                                <span class="text-muted" style="display:block; font-size:11px;">Designation</span>
+                                <strong id="empDetailDesig">--</strong>
+                            </div>
+                            <div>
+                                <span class="text-muted" style="display:block; font-size:11px;">Joining Date</span>
+                                <strong id="empDetailJoining">--</strong>
+                            </div>
+                            <div>
+                                <span class="text-muted" style="display:block; font-size:11px;">Current Work Status</span>
+                                <div id="empDetailStatus">--</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Current Leave Balances -->
+                <div style="margin-bottom: 24px;">
+                    <h3 style="font-size:16px; margin-bottom:14px; color:var(--text-secondary);">Current Leave Balances</h3>
+                    <div class="stat-grid" id="empDetailBalances">
+                        <!-- Populated by employees.js -->
+                    </div>
+                </div>
+
+                <!-- Leave History Table -->
+                <div class="content-card">
+                    <h3 style="font-size:16px; margin-bottom:16px;">Leave History & Applications</h3>
+                    <div class="table-responsive">
+                        <table class="data-table">
+                            <thead>
+                                <tr>
+                                    <th>Request ID</th>
+                                    <th>Leave Type</th>
+                                    <th>Date Range</th>
+                                    <th>Duration</th>
+                                    <th>Status</th>
+                                    <th>Reason</th>
+                                </tr>
+                            </thead>
+                            <tbody id="empDetailLeaveHistory">
+                                <tr><td colspan="6" class="table-empty">Loading history...</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </main>
+        </div>
+    </div>
+
+    <script>
+        Auth.requireRole(['admin', 'hr']);
+        initAppLayout('employees', 'Employee Details');
+        loadEmployeeDetailsPage();
+    </script>
+</body>
+</html>

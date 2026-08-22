@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Leave Calendar - LeavePortal</title>
+    <link rel="stylesheet" href="/css/style.css">
+    <link rel="stylesheet" href="/css/dashboard.css">
+    <link rel="stylesheet" href="/css/tables.css">
+    <link rel="stylesheet" href="/css/responsive.css">
+    <script src="/js/api.js"></script>
+    <script src="/js/auth.js"></script>
+    <script src="/js/common.js"></script>
+    <script src="/js/calendar.js"></script>
+    <script src="/js/leaves.js"></script>
+</head>
+<body>
+    <div class="app-layout">
+        <div id="sidebar-container"></div>
+
+        <div class="app-main">
+            <div id="navbar-container"></div>
+
+            <main class="app-content">
+                <div class="page-header">
+                    <div class="page-title">
+                        <h2>Team Leave Calendar</h2>
+                        <p>Monthly timeline visualization of scheduled employee time-off and coverage.</p>
+                    </div>
+                </div>
+
+                <div class="content-card">
+                    <!-- Calendar Navigation & Filters -->
+                    <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:16px; margin-bottom:20px; border-bottom:1px solid var(--surface-border); padding-bottom:16px;">
+                        <div style="display:flex; align-items:center; gap:12px;">
+                            <button id="calPrevBtn" class="btn btn-outline btn-sm">&larr; Previous</button>
+                            <h3 id="calMonthTitle" style="min-width:180px; text-align:center; font-size:18px;">August 2026</h3>
+                            <button id="calNextBtn" class="btn btn-outline btn-sm">Next &rarr;</button>
+                        </div>
+
+                        <div class="filter-group">
+                            <select id="calDeptFilter" class="form-control" style="min-width:150px;">
+                                <option value="">All Departments</option>
+                                <option value="Engineering">Engineering</option>
+                                <option value="Human Resources">Human Resources</option>
+                                <option value="Marketing">Marketing</option>
+                                <option value="Product Design">Product Design</option>
+                                <option value="Administration">Administration</option>
+                            </select>
+
+                            <select id="calStatusFilter" class="form-control" style="min-width:130px;">
+                                <option value="">Approved & Pending</option>
+                                <option value="Approved">Approved Only</option>
+                                <option value="Pending">Pending Only</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <!-- Calendar Grid Container -->
+                    <div id="calGrid">
+                        <!-- Populated dynamically via calendar.js -->
+                    </div>
+                </div>
+            </main>
+        </div>
+    </div>
+
+    <!-- Modal to view full event info -->
+    <div class="modal" id="viewLeaveModal">
+        <div class="modal-dialog">
+            <div class="modal-header">
+                <h3>Leave Schedule Details</h3>
+                <button class="modal-close" onclick="closeModal('viewLeaveModal')">&times;</button>
+            </div>
+            <div class="modal-body" id="viewLeaveModalBody">
+                <p>Loading details...</p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" onclick="closeModal('viewLeaveModal')">Close</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        Auth.requireRole(['admin', 'hr']);
+        initAppLayout('calendar', 'Leave Calendar');
+        initLeaveCalendar();
+    </script>
+</body>
+</html>

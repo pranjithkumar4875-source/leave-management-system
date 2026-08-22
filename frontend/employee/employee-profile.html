@@ -1,0 +1,226 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>My Profile - LeavePortal</title>
+    <link rel="stylesheet" href="/css/style.css">
+    <link rel="stylesheet" href="/css/dashboard.css">
+    <link rel="stylesheet" href="/css/responsive.css">
+    <script src="/js/api.js"></script>
+    <script src="/js/auth.js"></script>
+    <script src="/js/common.js"></script>
+</head>
+<body>
+    <div class="app-layout">
+        <div id="sidebar-container"></div>
+
+        <div class="app-main">
+            <div id="navbar-container"></div>
+
+            <main class="app-content">
+                <div class="page-header">
+                    <div class="page-title">
+                        <h2>My Profile</h2>
+                        <p>View and manage your personal details and security preferences.</p>
+                    </div>
+                    <div style="display:flex; gap:10px;">
+                        <button class="btn btn-outline" onclick="openModal('changePassModal')">Change Password</button>
+                        <button class="btn btn-primary" onclick="openModal('editProfileModal')">Edit Profile</button>
+                    </div>
+                </div>
+
+                <div class="dashboard-grid">
+                    <!-- Profile Card -->
+                    <div class="content-card">
+                        <div style="display:flex; align-items:center; gap:20px; margin-bottom:24px; padding-bottom:20px; border-bottom:1px solid var(--surface-border);">
+                            <div class="user-avatar" style="width:72px; height:72px; font-size:24px;" id="profileAvatarBig">
+                                ME
+                            </div>
+                            <div>
+                                <h3 style="font-size:20px; margin-bottom:4px;" id="profileName">--</h3>
+                                <p class="text-secondary" style="font-size:13px;" id="profileDesig">--</p>
+                                <span class="badge badge-role" style="margin-top:6px;" id="profileRoleBadge">EMPLOYEE</span>
+                            </div>
+                        </div>
+
+                        <div style="display:grid; grid-template-columns:1fr 1fr; gap:16px; font-size:14px;">
+                            <div>
+                                <span class="text-muted" style="font-size:12px; display:block; margin-bottom:2px;">Employee ID</span>
+                                <strong id="profileEmpId">--</strong>
+                            </div>
+                            <div>
+                                <span class="text-muted" style="font-size:12px; display:block; margin-bottom:2px;">Email Address</span>
+                                <strong id="profileEmail">--</strong>
+                            </div>
+                            <div>
+                                <span class="text-muted" style="font-size:12px; display:block; margin-bottom:2px;">Phone Number</span>
+                                <strong id="profilePhone">--</strong>
+                            </div>
+                            <div>
+                                <span class="text-muted" style="font-size:12px; display:block; margin-bottom:2px;">Department</span>
+                                <strong id="profileDept">--</strong>
+                            </div>
+                            <div>
+                                <span class="text-muted" style="font-size:12px; display:block; margin-bottom:2px;">Joining Date</span>
+                                <strong id="profileJoining">--</strong>
+                            </div>
+                            <div>
+                                <span class="text-muted" style="font-size:12px; display:block; margin-bottom:2px;">Account Status</span>
+                                <span class="badge badge-approved" id="profileStatus">Active</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Security & Quick Tips -->
+                    <div class="content-card">
+                        <h3 style="font-size:16px; margin-bottom:16px;">Security & Access</h3>
+                        <p class="text-secondary" style="font-size:13px; margin-bottom:16px;">
+                            Ensure your password is strong and updated periodically to safeguard organizational leave management records.
+                        </p>
+                        <button class="btn btn-outline" style="width:100%; margin-bottom:12px;" onclick="openModal('changePassModal')">
+                            Update Security Password
+                        </button>
+                        <button class="btn btn-danger" style="width:100%;" onclick="Auth.logout()">
+                            Sign Out of Session
+                        </button>
+                    </div>
+                </div>
+            </main>
+        </div>
+    </div>
+
+    <!-- Edit Profile Modal -->
+    <div class="modal" id="editProfileModal">
+        <div class="modal-dialog">
+            <div class="modal-header">
+                <h3>Edit Profile Information</h3>
+                <button class="modal-close" onclick="closeModal('editProfileModal')">&times;</button>
+            </div>
+            <form id="editProfileForm">
+                <div class="modal-body">
+                    <div class="form-group">
+                        <label for="editMyName" class="label-required">Full Name</label>
+                        <input type="text" id="editMyName" class="form-control" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="editMyPhone">Phone Number</label>
+                        <input type="tel" id="editMyPhone" class="form-control">
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" onclick="closeModal('editProfileModal')">Cancel</button>
+                    <button type="submit" class="btn btn-primary">Save Changes</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Change Password Modal -->
+    <div class="modal" id="changePassModal">
+        <div class="modal-dialog">
+            <div class="modal-header">
+                <h3>Change Security Password</h3>
+                <button class="modal-close" onclick="closeModal('changePassModal')">&times;</button>
+            </div>
+            <form id="changePassForm">
+                <div class="modal-body">
+                    <div class="form-group">
+                        <label for="currentPassword" class="label-required">Current Password</label>
+                        <input type="password" id="currentPassword" class="form-control" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="newPassword" class="label-required">New Password</label>
+                        <input type="password" id="newPassword" class="form-control" minlength="6" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="confirmNewPassword" class="label-required">Confirm New Password</label>
+                        <input type="password" id="confirmNewPassword" class="form-control" minlength="6" required>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" onclick="closeModal('changePassModal')">Cancel</button>
+                    <button type="submit" class="btn btn-success">Update Password</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        Auth.requireAuth();
+        initAppLayout('profile', 'My Profile');
+
+        let currentProfileData = null;
+
+        async function loadProfile() {
+            try {
+                const res = await API.get('/auth/me');
+                const user = res.user;
+                currentProfileData = user;
+
+                document.getElementById('profileAvatarBig').textContent = (user.fullName || 'U').substring(0, 2).toUpperCase();
+                document.getElementById('profileName').textContent = user.fullName || 'User';
+                document.getElementById('profileDesig').textContent = `${user.designation || 'Staff'} &bull; ${user.department || 'General'}`;
+                document.getElementById('profileEmpId').textContent = user.employeeId;
+                document.getElementById('profileEmail').textContent = user.email;
+                document.getElementById('profilePhone').textContent = user.phone || 'Not provided';
+                document.getElementById('profileDept').textContent = user.department || 'General';
+                document.getElementById('profileJoining').textContent = formatDate(user.joiningDate);
+                document.getElementById('profileRoleBadge').textContent = user.role.toUpperCase();
+
+                // Prefill edit form
+                document.getElementById('editMyName').value = user.fullName || '';
+                document.getElementById('editMyPhone').value = user.phone || '';
+            } catch (err) {
+                showToast('Failed to load profile: ' + err.message, 'danger');
+            }
+        }
+
+        loadProfile();
+
+        // Edit Profile Submit
+        document.getElementById('editProfileForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const fullName = document.getElementById('editMyName').value.trim();
+            const phone = document.getElementById('editMyPhone').value.trim();
+
+            try {
+                const res = await API.put(`/employees/${currentProfileData.employeeId}`, {
+                    fullName,
+                    phone
+                });
+                showToast(res.message, 'success');
+                closeModal('editProfileModal');
+                loadProfile();
+            } catch (err) {
+                showToast(err.message, 'danger');
+            }
+        });
+
+        // Change Password Submit
+        document.getElementById('changePassForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const currentPassword = document.getElementById('currentPassword').value;
+            const newPassword = document.getElementById('newPassword').value;
+            const confirmNewPassword = document.getElementById('confirmNewPassword').value;
+
+            if (newPassword !== confirmNewPassword) {
+                showToast('New passwords do not match.', 'danger');
+                return;
+            }
+
+            try {
+                const res = await API.put('/auth/change-password', {
+                    currentPassword,
+                    newPassword
+                });
+                showToast(res.message, 'success');
+                closeModal('changePassModal');
+                document.getElementById('changePassForm').reset();
+            } catch (err) {
+                showToast(err.message, 'danger');
+            }
+        });
+    </script>
+</body>
+</html>

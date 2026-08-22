@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>HR Leave Requests - LeavePortal</title>
+    <link rel="stylesheet" href="/css/style.css">
+    <link rel="stylesheet" href="/css/dashboard.css">
+    <link rel="stylesheet" href="/css/tables.css">
+    <link rel="stylesheet" href="/css/responsive.css">
+    <script src="/js/api.js"></script>
+    <script src="/js/auth.js"></script>
+    <script src="/js/common.js"></script>
+    <script src="/js/leaves.js"></script>
+</head>
+<body>
+    <div class="app-layout">
+        <div id="sidebar-container"></div>
+
+        <div class="app-main">
+            <div id="navbar-container"></div>
+
+            <main class="app-content">
+                <div class="page-header">
+                    <div class="page-title">
+                        <h2>Leave Applications Queue</h2>
+                        <p>Approve or reject time-off requests submitted by organizational staff.</p>
+                    </div>
+                </div>
+
+                <div class="table-wrapper">
+                    <!-- Filters Toolbar -->
+                    <div class="table-toolbar">
+                        <div class="search-box">
+                            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
+                            <input type="text" id="filterSearch" class="form-control" placeholder="Search by employee, ID, reason..." oninput="loadManageLeaves()">
+                        </div>
+
+                        <div class="filter-group">
+                            <select id="filterStatus" class="form-control" onchange="loadManageLeaves()" style="min-width:140px;">
+                                <option value="">All Statuses</option>
+                                <option value="Pending" selected>Pending</option>
+                                <option value="Approved">Approved</option>
+                                <option value="Rejected">Rejected</option>
+                                <option value="Cancelled">Cancelled</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="table-responsive">
+                        <table class="data-table">
+                            <thead>
+                                <tr>
+                                    <th>Request ID</th>
+                                    <th>Employee</th>
+                                    <th>Leave Type</th>
+                                    <th>From &rarr; To</th>
+                                    <th>Days</th>
+                                    <th>Reason</th>
+                                    <th>Status</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody id="manageLeavesTableBody">
+                                <tr><td colspan="8" class="table-empty">Loading requests...</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </main>
+        </div>
+    </div>
+
+    <!-- Reject Reason Modal -->
+    <div class="modal" id="rejectLeaveModal">
+        <div class="modal-dialog">
+            <div class="modal-header">
+                <h3>Reject Leave Application</h3>
+                <button class="modal-close" onclick="closeModal('rejectLeaveModal')">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="form-group">
+                    <label for="rejectReasonInput" class="label-required">Reason for Rejection</label>
+                    <textarea id="rejectReasonInput" class="form-control" placeholder="Specify HR rejection reason..." required></textarea>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" onclick="closeModal('rejectLeaveModal')">Cancel</button>
+                <button type="button" class="btn btn-danger" onclick="submitRejectLeave()">Reject Application</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- View Leave Details Modal -->
+    <div class="modal" id="viewLeaveModal">
+        <div class="modal-dialog">
+            <div class="modal-header">
+                <h3>Leave Request Details</h3>
+                <button class="modal-close" onclick="closeModal('viewLeaveModal')">&times;</button>
+            </div>
+            <div class="modal-body" id="viewLeaveModalBody">
+                <p>Loading details...</p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" onclick="closeModal('viewLeaveModal')">Close</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        Auth.requireRole(['hr', 'admin']);
+        initAppLayout('leave-requests', 'Leave Requests');
+        loadManageLeaves();
+    </script>
+</body>
+</html>

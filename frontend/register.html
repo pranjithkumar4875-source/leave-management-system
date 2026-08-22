@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Employee Registration - Leave Request Management System</title>
+    <link rel="stylesheet" href="/css/style.css">
+    <link rel="stylesheet" href="/css/auth.css">
+    <script src="/js/api.js"></script>
+    <script src="/js/auth.js"></script>
+    <script src="/js/common.js"></script>
+</head>
+<body>
+    <div class="auth-wrapper">
+        <div class="auth-box" style="max-width: 520px;">
+            <div class="auth-logo">
+                <div class="logo-badge">HR</div>
+                <h1>Create Employee Account</h1>
+                <p>Join your organization's Leave Management Portal</p>
+            </div>
+
+            <form id="registerForm">
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 14px;">
+                    <div class="form-group">
+                        <label for="employeeId" class="label-required">Employee ID</label>
+                        <input type="text" id="employeeId" class="form-control" placeholder="e.g. EMP009" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="fullName" class="label-required">Full Name</label>
+                        <input type="text" id="fullName" class="form-control" placeholder="e.g. Michael Scott" required>
+                    </div>
+                </div>
+
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 14px;">
+                    <div class="form-group">
+                        <label for="email" class="label-required">Company Email</label>
+                        <input type="email" id="email" class="form-control" placeholder="name@example.com" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="phone">Phone Number</label>
+                        <input type="tel" id="phone" class="form-control" placeholder="+1-555-0199">
+                    </div>
+                </div>
+
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 14px;">
+                    <div class="form-group">
+                        <label for="department" class="label-required">Department</label>
+                        <select id="department" class="form-control" required>
+                            <option value="Engineering">Engineering</option>
+                            <option value="Human Resources">Human Resources</option>
+                            <option value="Marketing">Marketing</option>
+                            <option value="Product Design">Product Design</option>
+                            <option value="Finance">Finance</option>
+                            <option value="Administration">Administration</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="designation" class="label-required">Designation</label>
+                        <input type="text" id="designation" class="form-control" placeholder="e.g. Software Engineer" required>
+                    </div>
+                </div>
+
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 14px;">
+                    <div class="form-group">
+                        <label for="password" class="label-required">Password</label>
+                        <input type="password" id="password" class="form-control" placeholder="Min. 6 characters" minlength="6" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="confirmPassword" class="label-required">Confirm Password</label>
+                        <input type="password" id="confirmPassword" class="form-control" placeholder="Re-enter password" minlength="6" required>
+                    </div>
+                </div>
+
+                <button type="submit" class="btn btn-primary" style="width: 100%; padding: 13px; margin-top: 10px;">
+                    Complete Registration
+                </button>
+            </form>
+
+            <div class="auth-footer">
+                Already registered? <a href="/login.html">Sign in here</a>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        document.getElementById('registerForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+
+            const employeeId = document.getElementById('employeeId').value.trim();
+            const fullName = document.getElementById('fullName').value.trim();
+            const email = document.getElementById('email').value.trim();
+            const phone = document.getElementById('phone').value.trim();
+            const department = document.getElementById('department').value;
+            const designation = document.getElementById('designation').value.trim();
+            const password = document.getElementById('password').value;
+            const confirmPassword = document.getElementById('confirmPassword').value;
+
+            if (password !== confirmPassword) {
+                showToast('Passwords do not match.', 'danger');
+                return;
+            }
+
+            const submitBtn = e.target.querySelector('button[type="submit"]');
+            submitBtn.disabled = true;
+            submitBtn.textContent = 'Registering...';
+
+            try {
+                const res = await API.post('/auth/register', {
+                    employeeId,
+                    fullName,
+                    email,
+                    phone,
+                    department,
+                    designation,
+                    password
+                });
+
+                showToast(res.message || 'Registration successful! Redirecting to login...', 'success');
+                setTimeout(() => {
+                    window.location.href = '/login.html';
+                }, 1200);
+            } catch (err) {
+                showToast(err.message || 'Registration failed.', 'danger');
+                submitBtn.disabled = false;
+                submitBtn.textContent = 'Complete Registration';
+            }
+        });
+    </script>
+</body>
+</html>

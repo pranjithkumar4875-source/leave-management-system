@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Dashboard - LeavePortal</title>
+    <link rel="stylesheet" href="/css/style.css">
+    <link rel="stylesheet" href="/css/dashboard.css">
+    <link rel="stylesheet" href="/css/tables.css">
+    <link rel="stylesheet" href="/css/responsive.css">
+    <script src="/js/api.js"></script>
+    <script src="/js/auth.js"></script>
+    <script src="/js/common.js"></script>
+    <script src="/js/dashboard.js"></script>
+    <script src="/js/leaves.js"></script>
+</head>
+<body>
+    <div class="app-layout">
+        <div id="sidebar-container"></div>
+
+        <div class="app-main">
+            <div id="navbar-container"></div>
+
+            <main class="app-content">
+                <div class="page-header">
+                    <div class="page-title">
+                        <h2>Admin Overview</h2>
+                        <p>Enterprise statistics, employee leave distribution, and pending approvals.</p>
+                    </div>
+                    <div style="display:flex; gap:10px;">
+                        <a href="/admin/import-employees.html" class="btn btn-outline">Import Employees</a>
+                        <a href="/admin/manage-leaves.html" class="btn btn-primary">Review Leaves</a>
+                    </div>
+                </div>
+
+                <!-- Admin Metrics -->
+                <div class="stat-grid">
+                    <div class="stat-card">
+                        <div class="stat-top">
+                            <span class="stat-title">Total Active Staff</span>
+                            <div class="stat-icon icon-purple">
+                                <svg width="20" height="20" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"></path></svg>
+                            </div>
+                        </div>
+                        <div class="stat-value" id="statTotalEmployees">--</div>
+                        <div class="stat-subtitle">Across all departments</div>
+                    </div>
+
+                    <div class="stat-card">
+                        <div class="stat-top">
+                            <span class="stat-title">Pending Requests</span>
+                            <div class="stat-icon icon-amber">
+                                <svg width="20" height="20" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                            </div>
+                        </div>
+                        <div class="stat-value" id="statPendingRequests">--</div>
+                        <div class="stat-subtitle text-warning">Requires action</div>
+                    </div>
+
+                    <div class="stat-card">
+                        <div class="stat-top">
+                            <span class="stat-title">Approved Leaves</span>
+                            <div class="stat-icon icon-emerald">
+                                <svg width="20" height="20" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                            </div>
+                        </div>
+                        <div class="stat-value" id="statApprovedRequests">--</div>
+                        <div class="stat-subtitle text-success">This calendar year</div>
+                    </div>
+
+                    <div class="stat-card">
+                        <div class="stat-top">
+                            <span class="stat-title">Employees on Leave Today</span>
+                            <div class="stat-icon icon-sky">
+                                <svg width="20" height="20" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg>
+                            </div>
+                        </div>
+                        <div class="stat-value" id="statOnLeaveToday">--</div>
+                        <div class="stat-subtitle">Currently absent</div>
+                    </div>
+                </div>
+
+                <!-- Visual Charts Section -->
+                <div class="dashboard-grid">
+                    <div class="content-card">
+                        <div class="card-header-flex">
+                            <h3>Monthly Leave Trend</h3>
+                            <span class="text-muted" style="font-size:12px;">Total approved days / month</span>
+                        </div>
+                        <div class="chart-container" id="monthlyLeaveChart">
+                            <!-- Populated dynamically via dashboard.js -->
+                        </div>
+                    </div>
+
+                    <div class="content-card">
+                        <div class="card-header-flex">
+                            <h3>Department Usage</h3>
+                            <span class="text-muted" style="font-size:12px;">Days consumed</span>
+                        </div>
+                        <div id="deptUsageList">
+                            <p class="text-muted">Loading department metrics...</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Recent Leave Applications Table -->
+                <div class="content-card">
+                    <div class="card-header-flex">
+                        <h3>Recent Leave Applications</h3>
+                        <a href="/admin/manage-leaves.html" class="btn btn-outline btn-sm">Manage All</a>
+                    </div>
+                    <div class="table-responsive">
+                        <table class="data-table">
+                            <thead>
+                                <tr>
+                                    <th>Request ID</th>
+                                    <th>Employee</th>
+                                    <th>Leave Type</th>
+                                    <th>Date Range</th>
+                                    <th>Days</th>
+                                    <th>Status</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody id="adminRecentLeavesTable">
+                                <tr><td colspan="7" class="table-empty">Loading leave data...</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </main>
+        </div>
+    </div>
+
+    <!-- Reject Modal -->
+    <div class="modal" id="rejectLeaveModal">
+        <div class="modal-dialog">
+            <div class="modal-header">
+                <h3>Reject Leave Request</h3>
+                <button class="modal-close" onclick="closeModal('rejectLeaveModal')">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="form-group">
+                    <label for="rejectReasonInput" class="label-required">Reason for Rejection</label>
+                    <textarea id="rejectReasonInput" class="form-control" placeholder="Provide explanation for rejecting this request..." required></textarea>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" onclick="closeModal('rejectLeaveModal')">Cancel</button>
+                <button type="button" class="btn btn-danger" onclick="submitRejectLeave()">Confirm Rejection</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        Auth.requireRole(['admin']);
+        initAppLayout('dashboard', 'Admin Dashboard');
+        loadDashboardData();
+    </script>
+</body>
+</html>

@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sign In - Leave Request Management System</title>
+    <link rel="stylesheet" href="/css/style.css">
+    <link rel="stylesheet" href="/css/auth.css">
+    <script src="/js/api.js"></script>
+    <script src="/js/auth.js"></script>
+    <script src="/js/common.js"></script>
+</head>
+<body>
+    <div class="auth-wrapper">
+        <div class="auth-box">
+            <div class="auth-logo">
+                <div class="logo-badge">HR</div>
+                <h1>Welcome Back</h1>
+                <p>Sign in to your Leave Management portal</p>
+            </div>
+
+            <form id="loginForm">
+                <div class="form-group">
+                    <label for="emailOrId" class="label-required">Email or Employee ID</label>
+                    <input type="text" id="emailOrId" class="form-control" placeholder="e.g. admin@example.com or EMP001" required autocomplete="username">
+                </div>
+
+                <div class="form-group">
+                    <label for="password" class="label-required">Password</label>
+                    <div class="input-password-wrapper">
+                        <input type="password" id="password" class="form-control" placeholder="Enter your password" required autocomplete="current-password">
+                        <button type="button" class="toggle-password" id="togglePasswordBtn">Show</button>
+                    </div>
+                </div>
+
+                <div class="auth-options">
+                    <label class="remember-me">
+                        <input type="checkbox" id="rememberMe">
+                        <span>Remember me</span>
+                    </label>
+                    <a href="/forgot-password.html">Forgot password?</a>
+                </div>
+
+                <button type="submit" class="btn btn-primary" style="width: 100%; padding: 13px;">
+                    Sign In to Portal
+                </button>
+            </form>
+
+            <div class="auth-footer">
+                Don't have an account? <a href="/register.html">Register here</a>
+            </div>
+
+            <!-- Quick Demo Credentials Box -->
+            <div class="demo-accounts">
+                <h4>
+                    <span>Quick Demo Credentials</span>
+                    <span style="font-weight:normal; font-size:10px; color:var(--text-muted);">(Click to Autofill)</span>
+                </h4>
+                <div class="demo-chips">
+                    <div class="demo-chip" onclick="fillLogin('admin@example.com', 'admin123')">
+                        <span><strong>Admin:</strong> admin@example.com</span>
+                        <span>admin123</span>
+                    </div>
+                    <div class="demo-chip" onclick="fillLogin('hr@example.com', 'hr123')">
+                        <span><strong>HR:</strong> hr@example.com</span>
+                        <span>hr123</span>
+                    </div>
+                    <div class="demo-chip" onclick="fillLogin('john.doe@example.com', 'emp123')">
+                        <span><strong>Employee:</strong> john.doe@example.com</span>
+                        <span>emp123</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Password toggle
+        const toggleBtn = document.getElementById('togglePasswordBtn');
+        const passInput = document.getElementById('password');
+        toggleBtn.addEventListener('click', () => {
+            if (passInput.type === 'password') {
+                passInput.type = 'text';
+                toggleBtn.textContent = 'Hide';
+            } else {
+                passInput.type = 'password';
+                toggleBtn.textContent = 'Show';
+            }
+        });
+
+        function fillLogin(email, pass) {
+            document.getElementById('emailOrId').value = email;
+            document.getElementById('password').value = pass;
+        }
+
+        // Login submission
+        document.getElementById('loginForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const emailOrId = document.getElementById('emailOrId').value.trim();
+            const password = document.getElementById('password').value;
+            const submitBtn = e.target.querySelector('button[type="submit"]');
+
+            submitBtn.disabled = true;
+            submitBtn.textContent = 'Signing in...';
+
+            try {
+                const res = await Auth.login(emailOrId, password);
+                showToast('Login successful! Redirecting...', 'success');
+                setTimeout(() => {
+                    Auth.redirectByRole(res.user.role);
+                }, 700);
+            } catch (err) {
+                showToast(err.message || 'Invalid email or password', 'danger');
+                submitBtn.disabled = false;
+                submitBtn.textContent = 'Sign In to Portal';
+            }
+        });
+
+        // If already logged in, redirect
+        if (Auth.isAuthenticated()) {
+            const user = Auth.getCurrentUser();
+            Auth.redirectByRole(user.role);
+        }
+    </script>
+</body>
+</html>

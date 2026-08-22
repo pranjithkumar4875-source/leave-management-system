@@ -1,0 +1,5 @@
+node_modules/
+.env
+uploads/
+*.log
+backend/config/local-store.json

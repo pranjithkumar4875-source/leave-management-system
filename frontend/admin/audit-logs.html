@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>System Audit Logs - LeavePortal</title>
+    <link rel="stylesheet" href="/css/style.css">
+    <link rel="stylesheet" href="/css/dashboard.css">
+    <link rel="stylesheet" href="/css/tables.css">
+    <link rel="stylesheet" href="/css/responsive.css">
+    <script src="/js/api.js"></script>
+    <script src="/js/auth.js"></script>
+    <script src="/js/common.js"></script>
+</head>
+<body>
+    <div class="app-layout">
+        <div id="sidebar-container"></div>
+
+        <div class="app-main">
+            <div id="navbar-container"></div>
+
+            <main class="app-content">
+                <div class="page-header">
+                    <div class="page-title">
+                        <h2>Security & System Audit Logs</h2>
+                        <p>Immutable event log tracking logins, approvals, rejections, employee imports, and edits.</p>
+                    </div>
+                </div>
+
+                <div class="table-wrapper">
+                    <!-- Filter Toolbar -->
+                    <div class="table-toolbar">
+                        <div class="search-box">
+                            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
+                            <input type="text" id="auditSearchInput" class="form-control" placeholder="Search by action or user..." oninput="loadAuditLogs()">
+                        </div>
+
+                        <div class="filter-group">
+                            <select id="auditActionFilter" class="form-control" onchange="loadAuditLogs()" style="min-width:180px;">
+                                <option value="">All Action Types</option>
+                                <option value="User logged in">User Logged In</option>
+                                <option value="Leave request created">Leave Request Created</option>
+                                <option value="Leave request approved">Leave Request Approved</option>
+                                <option value="Leave request rejected">Leave Request Rejected</option>
+                                <option value="Employee updated">Employee Updated</option>
+                                <option value="Employee imported">Employee Imported</option>
+                                <option value="Password changed">Password Changed</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="table-responsive">
+                        <table class="data-table">
+                            <thead>
+                                <tr>
+                                    <th>Timestamp</th>
+                                    <th>User & Role</th>
+                                    <th>Action</th>
+                                    <th>Event Details</th>
+                                    <th>IP / Device Client</th>
+                                </tr>
+                            </thead>
+                            <tbody id="auditLogsTableBody">
+                                <tr><td colspan="5" class="table-empty">Loading audit events...</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </main>
+        </div>
+    </div>
+
+    <script>
+        Auth.requireRole(['admin']);
+        initAppLayout('audit', 'Audit Logs');
+
+        async function loadAuditLogs() {
+            const tableBody = document.getElementById('auditLogsTableBody');
+            if (!tableBody) return;
+
+            const actionFilter = document.getElementById('auditActionFilter').value;
+            const searchVal = document.getElementById('auditSearchInput').value.trim().toLowerCase();
+
+            try {
+                let endpoint = '/audit-logs';
+                if (actionFilter) endpoint += `?action=${encodeURIComponent(actionFilter)}`;
+
+                const res = await API.get(endpoint);
+                let logs = res.logs || [];
+
+                if (searchVal) {
+                    logs = logs.filter(l =>
+                        (l.user_name && l.user_name.toLowerCase().includes(searchVal)) ||
+                        (l.action && l.action.toLowerCase().includes(searchVal)) ||
+                        (l.details && l.details.toLowerCase().includes(searchVal)) ||
+                        (l.employee_id && l.employee_id.toLowerCase().includes(searchVal))
+                    );
+                }
+
+                if (logs.length === 0) {
+                    tableBody.innerHTML = `<tr><td colspan="5" class="table-empty">No audit events match your filter.</td></tr>`;
+                    return;
+                }
+
+                tableBody.innerHTML = logs.map(l => `
+                    <tr>
+                        <td style="font-size:12px; color:var(--text-muted);">${formatDate(l.created_at)} <span style="font-size:11px;">(${new Date(l.created_at).toLocaleTimeString()})</span></td>
+                        <td>
+                            <strong>${l.user_name || l.employee_id || 'System'}</strong>
+                            <div><span class="badge badge-role" style="font-size:9px;">${l.role || 'system'}</span></div>
+                        </td>
+                        <td class="cell-primary">${l.action}</td>
+                        <td style="max-width:300px;">${l.details || 'N/A'}</td>
+                        <td style="font-size:12px; color:var(--text-muted);">
+                            <div><code>${l.ip_address || '127.0.0.1'}</code></div>
+                            <small style="font-size:10px;" title="${l.user_agent || ''}">${(l.user_agent || 'Client').substring(0, 30)}...</small>
+                        </td>
+                    </tr>
+                `).join('');
+            } catch (err) {
+                showToast('Failed to load audit logs: ' + err.message, 'danger');
+            }
+        }
+
+        loadAuditLogs();
+    </script>
+</body>
+</html>
