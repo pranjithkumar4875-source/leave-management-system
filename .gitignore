@@ -3,3 +3,4 @@ node_modules/
 uploads/
 *.log
 backend/config/local-store.json
+database/local_db.json
